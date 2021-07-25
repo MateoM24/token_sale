@@ -18,7 +18,7 @@ contract('DappToken', function (accounts) {
     })
   })
 
-  it('allcates the initial supply upon deployment', function () {
+  it('allocates the initial supply upon deployment', function () {
     return DappToken.deployed().then(function (instance) {
       tokenInstance = instance;
       return tokenInstance.totalSupply();
@@ -72,6 +72,25 @@ contract('DappToken', function (accounts) {
     }).then(function (allowance) {
       assert.equal(allowance.toNumber(), 100, 'stores the allowance for delegated transfer');
     });
+  })
+
+  it('handles delegate transfer', function () {
+    return DappToken.deployed().then(function (instance) {
+      tokenInstance = instance;
+      fromAccount = accounts[2];
+      toAccount = accounts[3];
+      spendingAccount = accounts[4];
+      //Setup: transfer token to fromAccocunt
+      return tokenInstance.transfer(fromAccount, 100, { from: accounts[0] })
+    }).then(function (receipt) {
+      //approve spending 10 tokens from fromAccount
+      tokenInstance.approve(spendingAccount, 10, { from: fromAccount });
+    }).then(function (receipt) {
+      //try transferring something bigger that the sender's balance
+      return tokenInstance.transferFrom(fromAccount, toAccount, 9999, { from: spendingAccount });
+    }).then(assert.fail).catch(function (error) {
+      assert(error.message.indexOf('revert') >= 0, 'cannot transfer value larger then balance');
+    })
   })
 
 })
