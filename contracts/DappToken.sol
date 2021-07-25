@@ -8,7 +8,15 @@ contract DappToken {
 
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
 
+    //transfer event
+    event Approval(
+        address indexed _owner,
+        address indexed _spender,
+        uint256 _value
+    );
+
     mapping(address => uint256) public balanceOf;
+    mapping(address => mapping(address => uint256)) public allowance;
 
     //constructor is invoke when app is deployed to blockchain
     constructor(uint256 _initialSupply) public {
@@ -27,4 +35,17 @@ contract DappToken {
         emit Transfer(msg.sender, _to, _value);
         return true;
     }
+
+    //Delegated Transfer:
+    //approve
+    function approve(address _spender, uint256 _value)
+        public
+        returns (bool success)
+    {
+        allowance[msg.sender][_spender] = _value;
+        emit Approval(msg.sender, _spender, _value);
+        return true;
+    }
+
+    //transferFrom
 }
